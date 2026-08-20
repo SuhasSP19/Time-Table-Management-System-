@@ -1,0 +1,348 @@
+<!-- 
+  LOCALSTORAGE TESTING & EXAMPLES
+  Open this in browser console to test the persistence system
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TMS LocalStorage Tester</title>
+  <style>
+    body { font-family: monospace; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+    h2 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+    .code-block { background: #f8f8f8; padding: 10px; border-left: 3px solid #007bff; margin: 10px 0; overflow-x: auto; }
+    button { padding: 8px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .output { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; max-height: 300px; overflow-y: auto; }
+    .success { color: #28a745; }
+    .error { color: #dc3545; }
+    .info { color: #17a2b8; }
+    .warning { color: #ffc107; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🗄️ TMS LocalStorage Tester</h1>
+  
+  <div class="section">
+    <h2>📊 Storage Status</h2>
+    <button onclick="testStorageStats()">Check Storage Status</button>
+    <button onclick="testDebugInfo()">View Debug Info</button>
+    <div id="status-output" class="output"></div>
+  </div>
+
+  <div class="section">
+    <h2>💾 Save Operations</h2>
+    <button onclick="testSaveUserSession()">Save User Session</button>
+    <button onclick="testSaveFacultyPreferences()">Save Faculty Preferences</button>
+    <button onclick="testSaveHODAssignments()">Save HOD Assignments</button>
+    <button onclick="testSaveLeaveRecords()">Save Leave Records</button>
+    <button onclick="testSaveSubstitutions()">Save Substitutions</button>
+    <div id="save-output" class="output"></div>
+  </div>
+
+  <div class="section">
+    <h2>🔄 Load Operations</h2>
+    <button onclick="testLoadUserSession()">Load User Session</button>
+    <button onclick="testLoadFacultyPreferences()">Load Faculty Preferences</button>
+    <button onclick="testLoadHODAssignments()">Load HOD Assignments</button>
+    <button onclick="testLoadLeaveRecords()">Load Leave Records</button>
+    <button onclick="testLoadSubstitutions()">Load Substitutions</button>
+    <div id="load-output" class="output"></div>
+  </div>
+
+  <div class="section">
+    <h2>📤 Export/Import</h2>
+    <button onclick="testExportAllData()">Export All Data</button>
+    <button onclick="testImportData()">Import Test Data</button>
+    <div id="export-output" class="output"></div>
+  </div>
+
+  <div class="section">
+    <h2>🗑️ Clear Operations</h2>
+    <button onclick="testClearUserSession()">Clear User Session</button>
+    <button onclick="testClearAppData()">Clear App Data</button>
+    <button onclick="testClearEverything()">Clear Everything (⚠️ WARNING)</button>
+    <div id="clear-output" class="output"></div>
+  </div>
+
+  <div class="section">
+    <h2>🧪 Full Test Suite</h2>
+    <button onclick="runFullTestSuite()">Run All Tests</button>
+    <div id="suite-output" class="output"></div>
+  </div>
+</div>
+
+<script>
+
+// Logging helper
+function log(msg, type = 'info') {
+  const timestamp = new Date().toLocaleTimeString();
+  const prefix = {
+    'info': 'ℹ️',
+    'success': '✅',
+    'error': '❌',
+    'warning': '⚠️'
+  }[type] || '•';
+  console.log(`${prefix} [${timestamp}] ${msg}`);
+}
+
+function formatOutput(title, data) {
+  return `<div class="info"><strong>${title}</strong></div><pre>${JSON.stringify(data, null, 2)}</pre>`;
+}
+
+function appendOutput(elementId, html) {
+  document.getElementById(elementId).innerHTML += html + '<hr>';
+}
+
+// Test Functions
+
+function testStorageStats() {
+  log('Testing storage stats...', 'info');
+  const stats = window.LS.getStorageStats();
+  appendOutput('status-output', formatOutput('📊 Storage Stats:', stats));
+}
+
+function testDebugInfo() {
+  log('Testing debug info...', 'info');
+  window.LS.debugStorageInfo();
+  appendOutput('status-output', `<div class="success">✅ Debug info logged to console (open DevTools)</div>`);
+}
+
+function testSaveUserSession() {
+  log('Saving test user session...', 'info');
+  const testSession = {
+    id: 'test_user_123',
+    name: 'Dr. Test User',
+    role: 'hod',
+    institution: 'SIT'
+  };
+  window.LS.saveUserSession(testSession);
+  appendOutput('save-output', formatOutput('📝 User Session Saved:', testSession));
+  log('User session saved', 'success');
+}
+
+function testSaveFacultyPreferences() {
+  log('Saving test faculty preferences...', 'info');
+  const testPrefs = {
+    'fac_001': {
+      facultyName: 'Dr. Test Faculty',
+      corePreferences: ['CN', 'IoT'],
+      labPreferences: ['CN-Lab', 'IoT-Lab'],
+      status: 'submitted'
+    }
+  };
+  window.LS.saveFacultyPreferences(testPrefs);
+  appendOutput('save-output', formatOutput('📚 Faculty Preferences Saved:', testPrefs));
+  log('Faculty preferences saved', 'success');
+}
+
+function testSaveHODAssignments() {
+  log('Saving test HOD assignments...', 'info');
+  const testAssign = {
+    'hod_001': {
+      assignedSubjects: ['CN', 'IoT', 'AI'],
+      totalCredit: 24
+    }
+  };
+  window.LS.saveHODSubjectAssignments(testAssign);
+  appendOutput('save-output', formatOutput('📋 HOD Assignments Saved:', testAssign));
+  log('HOD assignments saved', 'success');
+}
+
+function testSaveLeaveRecords() {
+  log('Saving test leave records...', 'info');
+  const testLeave = [
+    {
+      id: 'leave_001',
+      faculty_id: 'Nirmala',
+      leave_date: '2024-01-20',
+      leave_type: 'Medical Leave',
+      status: 'approved'
+    }
+  ];
+  window.LS.saveLeaveRecords(testLeave);
+  appendOutput('save-output', formatOutput('🏥 Leave Records Saved:', testLeave));
+  log('Leave records saved', 'success');
+}
+
+function testSaveSubstitutions() {
+  log('Saving test substitutions...', 'info');
+  const testSub = [
+    {
+      id: 'sub_001',
+      absent_faculty_id: 'Nirmala',
+      substitute_faculty_id: 'Bhargavi',
+      sub_date: '2024-01-20',
+      slot_id: 'S2',
+      status: 'approved'
+    }
+  ];
+  window.LS.saveSubstitutions(testSub);
+  appendOutput('save-output', formatOutput('👥 Substitutions Saved:', testSub));
+  log('Substitutions saved', 'success');
+}
+
+function testLoadUserSession() {
+  log('Loading user session...', 'info');
+  const session = window.LS.loadUserSession();
+  appendOutput('load-output', formatOutput('👤 User Session Loaded:', session || 'No data'));
+  log('User session loaded', 'success');
+}
+
+function testLoadFacultyPreferences() {
+  log('Loading faculty preferences...', 'info');
+  const prefs = window.LS.loadFacultyPreferences();
+  appendOutput('load-output', formatOutput('📚 Faculty Preferences Loaded:', prefs));
+  log('Faculty preferences loaded', 'success');
+}
+
+function testLoadHODAssignments() {
+  log('Loading HOD assignments...', 'info');
+  const assign = window.LS.loadHODSubjectAssignments();
+  appendOutput('load-output', formatOutput('📋 HOD Assignments Loaded:', assign));
+  log('HOD assignments loaded', 'success');
+}
+
+function testLoadLeaveRecords() {
+  log('Loading leave records...', 'info');
+  const leaves = window.LS.loadLeaveRecords();
+  appendOutput('load-output', formatOutput('🏥 Leave Records Loaded:', leaves));
+  log('Leave records loaded', 'success');
+}
+
+function testLoadSubstitutions() {
+  log('Loading substitutions...', 'info');
+  const subs = window.LS.loadSubstitutions();
+  appendOutput('load-output', formatOutput('👥 Substitutions Loaded:', subs));
+  log('Substitutions loaded', 'success');
+}
+
+function testExportAllData() {
+  log('Exporting all data...', 'warning');
+  const success = window.LS.exportAllData();
+  if (success) {
+    appendOutput('export-output', `<div class="success">✅ Data exported successfully! Check Downloads folder.</div>`);
+    log('Data exported to JSON file', 'success');
+  } else {
+    appendOutput('export-output', `<div class="error">❌ Export failed</div>`);
+    log('Export failed', 'error');
+  }
+}
+
+function testImportData() {
+  log('Testing data import...', 'info');
+  const testData = {
+    exportedAt: new Date().toISOString(),
+    facultyPreferences: {'test': {'facultyName': 'Test', 'status': 'submitted'}},
+    userSession: {'id': 'test_import', 'name': 'Import Test'}
+  };
+  const success = window.LS.importData(JSON.stringify(testData));
+  if (success) {
+    appendOutput('export-output', `<div class="success">✅ Data imported successfully!</div>`);
+    log('Data imported', 'success');
+  } else {
+    appendOutput('export-output', `<div class="error">❌ Import failed</div>`);
+    log('Import failed', 'error');
+  }
+}
+
+function testClearUserSession() {
+  log('Clearing user session...', 'warning');
+  window.LS.clearUserSession();
+  appendOutput('clear-output', `<div class="warning">⚠️ User session cleared</div>`);
+  log('User session cleared', 'warning');
+}
+
+function testClearAppData() {
+  log('Clearing app data...', 'warning');
+  window.LS.clearAllAppData();
+  appendOutput('clear-output', `<div class="warning">⚠️ All app data cleared (keeping session)</div>`);
+  log('App data cleared', 'warning');
+}
+
+function testClearEverything() {
+  if (confirm('⚠️ WARNING: This will delete ALL stored data. Continue?')) {
+    log('Clearing everything...', 'error');
+    window.LS.clearEverything();
+    appendOutput('clear-output', `<div class="error">❌ ALL DATA CLEARED</div>`);
+    log('All data cleared', 'error');
+  }
+}
+
+function runFullTestSuite() {
+  log('🧪 Running full test suite...', 'info');
+  
+  let output = '<div class="success"><strong>Full Test Suite Results</strong></div>';
+  
+  // Test 1: Storage availability
+  try {
+    localStorage.setItem('test_key', 'test_value');
+    localStorage.removeItem('test_key');
+    output += '<div class="success">✅ localStorage available</div>';
+  } catch (e) {
+    output += '<div class="error">❌ localStorage not available</div>';
+  }
+  
+  // Test 2: Window.LS exists
+  if (typeof window.LS !== 'undefined') {
+    output += '<div class="success">✅ window.LS loaded</div>';
+  } else {
+    output += '<div class="error">❌ window.LS not found - load localStorage.js first</div>';
+    appendOutput('suite-output', output);
+    return;
+  }
+  
+  // Test 3: Save operations
+  try {
+    window.LS.saveUserSession({id: 'test', name: 'Test'});
+    output += '<div class="success">✅ User session save works</div>';
+  } catch (e) {
+    output += '<div class="error">❌ User session save failed</div>';
+  }
+  
+  // Test 4: Load operations
+  try {
+    const data = window.LS.loadUserSession();
+    output += '<div class="success">✅ User session load works</div>';
+  } catch (e) {
+    output += '<div class="error">❌ User session load failed</div>';
+  }
+  
+  // Test 5: Storage stats
+  try {
+    const stats = window.LS.getStorageStats();
+    output += '<div class="success">✅ Storage stats available</div>';
+    output += `<pre>${JSON.stringify(stats, null, 2)}</pre>`;
+  } catch (e) {
+    output += '<div class="error">❌ Storage stats failed</div>';
+  }
+  
+  // Test 6: Export capability
+  try {
+    // Don't actually export, just test the function exists
+    if (typeof window.LS.exportAllData === 'function') {
+      output += '<div class="success">✅ Export function available</div>';
+    }
+  } catch (e) {
+    output += '<div class="error">❌ Export function failed</div>';
+  }
+  
+  output += '<hr><div class="success"><strong>✅ Full test suite completed!</strong></div>';
+  appendOutput('suite-output', output);
+  log('Full test suite completed', 'success');
+}
+
+// Auto-run test suite on page load
+window.addEventListener('DOMContentLoaded', function() {
+  log('LocalStorage Tester loaded', 'success');
+  log('Click buttons above to test the persistence system', 'info');
+});
+
+</script>
+
+</body>
+</html>

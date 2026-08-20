@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Course Preference Form – Even Sem 2025-26</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #1a2744;
+    --blue:   #2563eb;
+    --sky:    #dbeafe;
+    --gold:   #c8963e;
+    --cream:  #faf8f4;
+    --border: #d1d8e8;
+    --text:   #1e2533;
+    --muted:  #6b7280;
+    --red:    #dc2626;
+    --green:  #16a34a;
+    --radius: 8px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .page-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .form-header {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 12px 12px 0 0;
+    padding: 2rem 2.5rem 1.6rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .form-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      135deg,
+      transparent,
+      transparent 40px,
+      rgba(255,255,255,.03) 40px,
+      rgba(255,255,255,.03) 41px
+    );
+  }
+  .form-header .badge {
+    display: inline-block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    background: var(--gold);
+    color: var(--navy);
+    padding: .25rem .7rem;
+    border-radius: 4px;
+    margin-bottom: .9rem;
+  }
+  .form-header h1 {
+    font-family: 'EB Garamond', serif;
+    font-size: 1.55rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: .3rem;
+  }
+  .form-header h2 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: .85rem;
+    font-weight: 500;
+    opacity: .75;
+    letter-spacing: .02em;
+  }
+  .accent-bar {
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold) 0%, #e8b86d 100%);
+  }
+
+  /* ── Card shell ── */
+  .form-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    padding: 2rem 2.5rem 2.5rem;
+  }
+
+  /* ── Faculty info row ── */
+  .info-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+  }
+  @media(max-width:560px){ .info-row { grid-template-columns: 1fr; } }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+  }
+  .field-group label {
+    font-size: .78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--muted);
+  }
+  .field-group input, .field-group select {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: .6rem .85rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .95rem;
+    color: var(--text);
+    background: var(--cream);
+    transition: border-color .2s, box-shadow .2s;
+    width: 100%;
+  }
+  .field-group input:focus, .field-group select:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    background: #fff;
+  }
+
+  /* ── Section wrapper ── */
+  .section {
+    margin-bottom: 2rem;
+  }
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1rem;
+  }
+  .section-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: #fff;
+    font-size: .8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-title h3 {
+    font-family: 'EB Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--navy);
+  }
+  .section-note {
+    font-size: .8rem;
+    color: var(--muted);
+    margin-top: .15rem;
+  }
+
+  /* ── Table ── */
+  .pref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .88rem;
+  }
+  .pref-table thead tr {
+    background: var(--navy);
+    color: #fff;
+  }
+  .pref-table thead th {
+    padding: .6rem .85rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: .78rem;
+    letter-spacing: .04em;
+  }
+  .pref-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background .15s;
+  }
+  .pref-table tbody tr:nth-child(even) { background: var(--cream); }
+  .pref-table tbody tr:hover { background: var(--sky); }
+  .pref-table td {
+    padding: .5rem .6rem;
+    vertical-align: middle;
+  }
+  .pref-table .row-num {
+    text-align: center;
+    font-weight: 700;
+    color: var(--muted);
+    font-size: .8rem;
+    width: 36px;
+  }
+
+  .pref-table select, .pref-table input[type=number] {
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    padding: .42rem .65rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .86rem;
+    color: var(--text);
+    background: #fff;
+    width: 100%;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .pref-table select:focus, .pref-table input[type=number]:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+  }
+  .pref-table input[type=number] { width: 80px; text-align: center; }
+
+  /* Fixed row (Section 1) */
+  .fixed-course {
+    font-style: italic;
+    font-size: .88rem;
+    color: var(--navy);
+    padding: .42rem .65rem;
+    background: var(--sky);
+    border-radius: 6px;
+  }
+
+  /* Validation badge on rows */
+  .req-badge {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    color: var(--red);
+    margin-left: .5rem;
+  }
+
+  /* ── Divider ── */
+  .divider {
+    border: none;
+    border-top: 1px dashed var(--border);
+    margin: 1.8rem 0;
+  }
+
+  /* ── Action bar ── */
+  .action-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .72rem 1.5rem;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: .9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    border: none;
+  }
+  .btn-primary {
+    background: var(--navy);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #243360; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(26,39,68,.3); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--navy);
+    border: 1.5px solid var(--navy);
+  }
+  .btn-secondary:hover { background: var(--sky); }
+  .btn-danger {
+    background: transparent;
+    color: var(--red);
+    border: 1.5px solid var(--border);
+    font-size: .82rem;
+    padding: .5rem 1rem;
+  }
+  .btn-danger:hover { border-color: var(--red); background: #fef2f2; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    padding: .9rem 1.4rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: .88rem;
+    color: #fff;
+    z-index: 999;
+    display: none;
+    animation: slideUp .3s ease;
+  }
+  .toast.success { background: var(--green); display: flex; gap: .6rem; align-items: center; }
+  .toast.error   { background: var(--red);   display: flex; gap: .6rem; align-items: center; }
+  @keyframes slideUp {
+    from { opacity:0; transform:translateY(12px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ── Print styles ── */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .form-header { background: var(--navy) !important; -webkit-print-color-adjust: exact; }
+    .action-bar, .toast { display: none !important; }
+    .pref-table select, .pref-table input { border: 1px solid #999 !important; background: #fff !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- Header -->
+  <div class="form-header">
+    <div class="badge">Even Semester · AY 2025–26</div>
+    <h1>Siddaganga Institute of Technology, Tumkur</h1>
+    <h2>Department of Computer Science &amp; Engineering — Course Preference Form</h2>
+    <h2 style="margin-top:.3rem;opacity:.6">BE (CSE / AI&amp;DS / AI&amp;ML) &amp; M.Tech (CSE)</h2>
+  </div>
+  <div class="accent-bar"></div>
+
+  <div class="form-card">
+
+    <!-- Faculty Info -->
+    <div class="info-row">
+      <div class="field-group">
+        <label>Faculty Name</label>
+        <input type="text" id="facultyName" placeholder="Dr. / Prof. Full Name" />
+      </div>
+      <div class="field-group">
+        <label>Designation</label>
+        <select id="designation">
+          <option value="">— Select —</option>
+          <option>Professor</option>
+          <option>Associate Professor</option>
+          <option>Assistant Professor</option>
+          <option>Senior Assistant Professor</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Section 1 -->
+    <div class="section">
+      <div class="section-title">
+        <div class="section-num">1</div>
+        <div>
+          <h3>II Semester — Common to All Branches</h3>
+          <div class="section-note">Enter the number of times you have taught this course.</div>
+        </div>
+      </div>
+      <table class="pref-table">
+        <thead>
+          <tr>
+            <th>Course Title</th>
+            <th>No. of Times Taught</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="fixed-course">Introduction to Python Programming</span></td>
+            <td><input type="number" id="py-times" min="0" placeholder="0" /></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="divider"/>
+
+    <!-- Section 2 -->
+    <div class="section">
+      <div class="section-title">
+        <div class="section-num">2</div>
+        <div>
+          <h3>Core Course Preferences <span class="req-badge">MIN 4 REQUIRED</span></h3>
+          <div class="section-note">Select at least 4 different core course preferences from the available list.</div>
+        </div>
+      </div>
+      <table class="pref-table" id="coreTable">
+        <thead>
+          <tr>
+            <th style="width:36px">#</th>
+            <th>Course Title</th>
+            <th style="width:130px">Semester</th>
+            <th style="width:130px">No. of Times Taught</th>
+          </tr>
+        </thead>
+        <tbody id="coreBody">
+          <!-- rows injected by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="divider"/>
+
+    <!-- Section 3 -->
+    <div class="section">
+      <div class="section-title">
+        <div class="section-num">3</div>
+        <div>
+          <h3>Laboratory Course Preferences <span class="req-badge">MIN 4 REQUIRED</span></h3>
+          <div class="section-note">Select at least 4 different laboratory course preferences.</div>
+        </div>
+      </div>
+      <table class="pref-table" id="labTable">
+        <thead>
+          <tr>
+            <th style="width:36px">#</th>
+            <th>Lab Course Title</th>
+            <th style="width:160px">Offered For</th>
+            <th style="width:130px">No. of Times Taught</th>
+          </tr>
+        </thead>
+        <tbody id="labBody">
+          <!-- rows injected by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-bar">
+      <button class="btn btn-primary" onclick="submitForm()">✓ &nbsp;Submit Preference</button>
+      <button class="btn btn-secondary" onclick="printForm()">⎙ &nbsp;Print / Save PDF</button>
+      <button class="btn btn-danger" onclick="resetForm()">↺ &nbsp;Reset Form</button>
+    </div>
+
+  </div><!-- /form-card -->
+</div><!-- /page-wrap -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─── Data ─────────────────────────────────────────── */
+const CORE_COURSES = [
+  // IV CSE
+  { title: "Design and Analysis of Algorithms", sem: "IV", branch: "CSE" },
+  { title: "Microcontroller and Embedded Systems", sem: "IV", branch: "CSE" },
+  { title: "Theory of Computations", sem: "IV", branch: "CSE" },
+  { title: "Universal Human Values", sem: "IV", branch: "CSE" },
+  // IV AI&DS / AI&ML
+  { title: "Design and Analysis of Algorithms", sem: "IV", branch: "AI&DS / AI&ML" },
+  { title: "Data Science with Python", sem: "IV", branch: "AI&DS / AI&ML" },
+  { title: "Artificial Intelligence", sem: "IV", branch: "AI&DS / AI&ML" },
+  { title: "Universal Human Values", sem: "IV", branch: "AI&DS / AI&ML" },
+  // VI CSE
+  { title: "Computer Networks", sem: "VI", branch: "CSE" },
+  { title: "Internet of Things", sem: "VI", branch: "CSE" },
+  { title: "Indian Knowledge System", sem: "VI", branch: "CSE" },
+  // VI AI&DS
+  { title: "Real Time Big Data Analytics", sem: "VI", branch: "AI&DS" },
+  { title: "Computer Networks (Theory)", sem: "VI", branch: "AI&DS" },
+  { title: "Indian Knowledge System", sem: "VI", branch: "AI&DS" },
+  // VI AI&ML
+  { title: "Natural Language Processing", sem: "VI", branch: "AI&ML" },
+  { title: "Computer Networks (Theory)", sem: "VI", branch: "AI&ML" },
+  { title: "Indian Knowledge System", sem: "VI", branch: "AI&ML" },
+  // VI Professional Electives – CSE
+  { title: "Cloud Computing", sem: "VI (PE)", branch: "CSE" },
+  { title: "Block Chain Technology", sem: "VI (PE)", branch: "CSE" },
+  { title: "High Performance Computing", sem: "VI (PE)", branch: "CSE" },
+  { title: "Advanced Computer Architecture", sem: "VI (PE)", branch: "CSE" },
+  // VI Professional Electives – AI&DS
+  { title: "Cloud Computing", sem: "VI (PE)", branch: "AI&DS" },
+  { title: "Distributed Data Storage Management", sem: "VI (PE)", branch: "AI&DS" },
+  // VI Professional Electives – AI&ML
+  { title: "Cloud Computing", sem: "VI (PE)", branch: "AI&ML" },
+  { title: "AI Driven Cyber Security", sem: "VI (PE)", branch: "AI&ML" },
+  // II M.Tech
+  { title: "Generative AI and Prompt Engineering", sem: "II (M.Tech)", branch: "CSE" },
+  { title: "ADHOC Wireless Networks", sem: "II (M.Tech)", branch: "CSE" },
+  { title: "Parallel Computing", sem: "II (M.Tech)", branch: "CSE" },
+  { title: "Advanced Internet of Things", sem: "II (M.Tech)", branch: "CSE" },
+  { title: "Quantum Computing (PE)", sem: "II (M.Tech)", branch: "CSE" },
+  { title: "Full Stack Development (AEC)", sem: "II (M.Tech)", branch: "CSE" },
+];
+
+const LAB_COURSES = [
+  { title: "Introduction to Python Programming Lab", offered: "II Sem – CSE / AI&ML" },
+  { title: "Design and Analysis of Algorithms Lab", offered: "IV – CSE / AI&DS / AI&ML" },
+  { title: "Theory of Computations Lab", offered: "IV CSE" },
+  { title: "Microcontroller and Embedded Systems Lab", offered: "IV CSE" },
+  { title: "Artificial Intelligence Lab", offered: "IV AI&DS, AI&ML" },
+  { title: "Data Science with Python Lab", offered: "IV AI&DS, AI&ML" },
+  { title: "JavaScript (AEC) Lab", offered: "IV CSE" },
+  { title: "Computer Networks Laboratory", offered: "VI CSE" },
+  { title: "Full Stack Development with Django Lab (AEC)", offered: "VI CSE" },
+  { title: "Internet of Things Laboratory", offered: "VI AI&ML, AI&DS" },
+  { title: "Natural Language Processing Lab", offered: "VI AI&ML" },
+  { title: "Real Time Big Data Analytics Lab", offered: "VI AI&DS" },
+  { title: "Data Analytics with Excel & R Laboratory (AEC)", offered: "IV AI&DS, AI&ML" },
+  { title: "Parallel Computing Laboratory", offered: "II CSE (M.Tech)" },
+];
+
+/* ─── Build option HTML ─────────────────────────────── */
+function coreOptions() {
+  let html = '<option value="">— Select a course —</option>';
+  let grouped = {};
+  CORE_COURSES.forEach(c => {
+    let grp = `Sem ${c.sem} · ${c.branch}`;
+    if (!grouped[grp]) grouped[grp] = [];
+    grouped[grp].push(c);
+  });
+  for (let [grp, courses] of Object.entries(grouped)) {
+    html += `<optgroup label="${grp}">`;
+    courses.forEach(c => {
+      html += `<option value="${c.title}|${c.sem}|${c.branch}">${c.title}</option>`;
+    });
+    html += '</optgroup>';
+  }
+  return html;
+}
+
+function labOptions() {
+  let html = '<option value="">— Select a lab —</option>';
+  LAB_COURSES.forEach(l => {
+    html += `<option value="${l.title}|${l.offered}">${l.title}</option>`;
+  });
+  return html;
+}
+
+/* ─── Render rows ───────────────────────────────────── */
+function buildRows(tbodyId, count, optsFn, semColId) {
+  const tbody = document.getElementById(tbodyId);
+  tbody.innerHTML = '';
+  for (let i = 1; i <= count; i++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="row-num">${i}</td>
+      <td>
+        <select class="course-sel" data-row="${i}" data-tbody="${tbodyId}" onchange="onCourseChange(this)">
+          ${optsFn()}
+        </select>
+      </td>
+      <td>
+        <input type="text" class="sem-field" id="${tbodyId}-sem-${i}" placeholder="—" readonly
+          style="background:var(--cream);font-size:.82rem;color:var(--muted);cursor:default;" />
+      </td>
+      <td>
+        <input type="number" class="times-field" min="0" placeholder="0" />
+      </td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+function buildLabRows() {
+  const tbody = document.getElementById('labBody');
+  tbody.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="row-num">${i}</td>
+      <td>
+        <select class="lab-sel" onchange="onLabChange(this, ${i})">
+          ${labOptions()}
+        </select>
+      </td>
+      <td>
+        <input type="text" id="lab-offered-${i}" placeholder="—" readonly
+          style="background:var(--cream);font-size:.82rem;color:var(--muted);cursor:default;width:100%;" />
+      </td>
+      <td>
+        <input type="number" class="times-field" min="0" placeholder="0" />
+      </td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+function onCourseChange(sel) {
+  const [, sem, branch] = sel.value ? sel.value.split('|') : ['','',''];
+  const row = sel.dataset.row;
+  const tbody = sel.dataset.tbody;
+  const semField = document.getElementById(`${tbody}-sem-${row}`);
+  semField.value = sem ? `${sem} – ${branch}` : '';
+}
+
+function onLabChange(sel, i) {
+  const [, offered] = sel.value ? sel.value.split('|') : ['',''];
+  document.getElementById(`lab-offered-${i}`).value = offered || '';
+}
+
+/* ─── Init ──────────────────────────────────────────── */
+buildRows('coreBody', 6, coreOptions, 'core');
+buildLabRows();
+
+/* ─── Submit ────────────────────────────────────────── */
+function submitForm() {
+  const name = document.getElementById('facultyName').value.trim();
+  const desig = document.getElementById('designation').value;
+
+  if (!name || !desig) { showToast('Please fill in your name and designation.', 'error'); return; }
+
+  // Validate core (at least 4 non-empty)
+  const coreSelects = document.querySelectorAll('#coreBody .course-sel');
+  const filledCore = [...coreSelects].filter(s => s.value).length;
+  if (filledCore < 4) { showToast(`Please select at least 4 core courses (you've selected ${filledCore}).`, 'error'); return; }
+
+  // Validate labs (at least 4 non-empty)
+  const labSelects = document.querySelectorAll('#labBody .lab-sel');
+  const filledLabs = [...labSelects].filter(s => s.value).length;
+  if (filledLabs < 4) { showToast(`Please select at least 4 lab courses (you've selected ${filledLabs}).`, 'error'); return; }
+
+  // Collect data
+  const pyTimes = document.getElementById('py-times').value || 0;
+  const corePrefs = [...coreSelects].map(s => s.value).filter(v => v);
+  const labPrefs = [...labSelects].map(s => s.value).filter(v => v);
+  const coreTimes = [...document.querySelectorAll('#coreBody .times-field')].map(i => i.value || 0);
+  const labTimes = [...document.querySelectorAll('#labBody .times-field')].map(i => i.value || 0);
+
+  const submission = {
+    id: 'pref_' + Date.now(),
+    timestamp: new Date().toISOString(),
+    facultyName: name,
+    designation: desig,
+    pythonTimesTaught: parseInt(pyTimes),
+    corePreferences: corePrefs,
+    coreTimesTaught: coreTimes,
+    labPreferences: labPrefs,
+    labTimesTaught: labTimes,
+    status: 'submitted'  // pending, approved, rejected
+  };
+
+// Store in localStorage
+  let allPrefs = JSON.parse(localStorage.getItem('tms_facultyPreferences') || '[]');
+  ;
+  fetch("http://localhost:3000/saveFacultyPreference", {
+
+    method: "POST",
+
+    headers: {
+        "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify(submission)
+
+})
+.then(res => res.json())
+.then(data => {
+    console.log("✅ Saved", data);
+});
+  localStorage.setItem('tms_facultyPreferences', JSON.stringify(allPrefs));
+  fetch("http://localhost:3000/saveFacultyPreference", {
+
+    method: "POST",
+
+    headers: {
+        "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify(submission)
+
+})
+.then(res => res.json())
+.then(data => {
+    console.log("✅ Saved", data);
+})
+.catch(err => {
+    console.error("❌ DB Save Failed", err);
+});
+  console.log("🔥 FETCH STARTING");
+  fetch("http://localhost:3000/save", {
+
+    method: "POST",
+
+    headers: {
+        "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify(submission)
+
+})
+.then(res => res.json())
+.then(data => {
+    console.log("✅ Saved to DB", data);
+})
+.catch(err => {
+    console.error("❌ DB Save Failed", err);
+});
+
+  showToast(`✓ Preferences submitted by ${name} - sent to HOD for approval!`, 'success');
+  
+  // Optional: Reset form after submit
+  // resetForm();
+}
+
+function printForm() { window.print(); }
+
+function resetForm() {
+  if (!confirm('Reset all form data?')) return;
+  document.getElementById('facultyName').value = '';
+  document.getElementById('designation').value = '';
+  document.getElementById('py-times').value = '';
+  buildRows('coreBody', 6, coreOptions, 'core');
+  buildLabRows();
+  showToast('Form reset.', 'success');
+}
+
+/* ─── Toast ─────────────────────────────────────────── */
+let toastTimer;
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.style.display = 'none'; t.className = 'toast'; }, 4000);
+}
+</script>
+</body>
+</html>
+

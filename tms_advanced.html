@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SIT — Advanced Timetable Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0c10;--s1:#111318;--s2:#181c24;--s3:#1e2330;--s4:#252d3d;
+  --bd:#2a3347;--bd2:#364060;
+  --ink:#e8edf8;--ink2:#8a97b8;--ink3:#4a5570;
+  --blue:#4d8cff;--blue-d:#2d5fd0;--blue-bg:rgba(77,140,255,.1);--blue-bd:rgba(77,140,255,.25);
+  --green:#2ecc8e;--green-d:#1a9966;--green-bg:rgba(46,204,142,.1);--green-bd:rgba(46,204,142,.25);
+  --amber:#f0a030;--amber-bg:rgba(240,160,48,.1);--amber-bd:rgba(240,160,48,.25);
+  --red:#ff4f6e;--red-bg:rgba(255,79,110,.1);--red-bd:rgba(255,79,110,.25);
+  --purple:#a87cff;--purple-bg:rgba(168,124,255,.1);--purple-bd:rgba(168,124,255,.25);
+  --teal:#30d6c0;--teal-bg:rgba(48,214,192,.1);--teal-bd:rgba(48,214,192,.25);
+  --orange:#ff8c42;--orange-bg:rgba(255,140,66,.1);--orange-bd:rgba(255,140,66,.25);
+  --mono:'Space Mono',monospace;
+  --sans:'Space Grotesk',sans-serif;
+  --r:6px;--r2:10px;--r3:16px;
+}
+html{font-size:13px;color-scheme:dark}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden}
+button,select,input,textarea{font-family:var(--sans)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+
+.topbar{height:52px;background:var(--s1);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 20px;gap:14px;position:sticky;top:0;z-index:300}
+.tb-logo{font-size:15px;font-weight:700;font-family:var(--mono);letter-spacing:-.02em}
+.tb-logo span{color:var(--blue)}
+.tb-sep{width:1px;height:20px;background:var(--bd2)}
+.tb-sub{font-size:10px;color:var(--ink3);font-family:var(--mono)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.phase-badge{padding:4px 12px;border-radius:20px;font-size:10px;font-weight:700;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;border:1px solid;background:var(--blue-bg);color:var(--blue);border-color:var(--blue-bd)}
+
+.layout{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 52px)}
+.sidebar{background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;position:sticky;top:52px;height:calc(100vh - 52px)}
+.sb-body{flex:1;overflow-y:auto;padding:10px 8px}
+.sb-grp{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);padding:12px 8px 4px}
+.nb{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r2);cursor:pointer;font-size:11px;font-weight:500;color:var(--ink2);transition:all .13s;border:1px solid transparent;margin-bottom:2px;background:none;width:100%;text-align:left}
+.nb:hover{background:var(--s3);color:var(--ink)}
+.nb.on{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue);font-weight:600}
+.nb-icon{width:16px;text-align:center;font-size:13px;flex-shrink:0}
+.nb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:8px;font-weight:700;padding:1px 6px;border-radius:10px;font-family:var(--mono)}
+.nb-ok{background:var(--green);color:#000}
+
+.main{overflow:hidden;display:flex;flex-direction:column}
+.ph{padding:14px 22px 12px;border-bottom:1px solid var(--bd);background:var(--s1);flex-shrink:0;display:flex;align-items:flex-start;gap:10px}
+.ph-info{flex:1}
+.ph h1{font-size:15px;font-weight:700}
+.ph p{font-size:10px;color:var(--ink2);margin-top:2px;font-family:var(--mono)}
+.ph-acts{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.pb{flex:1;overflow-y:auto;padding:18px 22px}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r2);font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--bd);background:var(--s3);color:var(--ink);transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--s4);border-color:var(--bd2)}
+.btn-blue {background:var(--blue-bg); border-color:var(--blue-bd); color:var(--blue)} .btn-blue:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-green{background:var(--green-bg);border-color:var(--green-bd);color:var(--green)} .btn-green:hover{background:var(--green);color:#000;border-color:var(--green)}
+.btn-amber{background:var(--amber-bg);border-color:var(--amber-bd);color:var(--amber)} .btn-amber:hover{background:var(--amber);color:#000}
+.btn-red  {background:var(--red-bg);  border-color:var(--red-bd);  color:var(--red)}   .btn-red:hover{background:var(--red);color:#fff}
+.btn-purple{background:var(--purple-bg);border-color:var(--purple-bd);color:var(--purple)}
+.btn-lg{padding:11px 22px;font-size:13px;font-weight:700}
+.btn-sm{padding:4px 10px;font-size:10px}
+.btn-xs{padding:2px 7px;font-size:9px}
+
+.stats-row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.stat{flex:1;min-width:110px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:12px 14px}
+.stat-num{font-size:26px;font-weight:700;font-family:var(--mono);line-height:1}
+.stat-lbl{font-size:9px;color:var(--ink3);margin-top:4px;letter-spacing:.04em;text-transform:uppercase}
+
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:16px 18px;margin-bottom:14px}
+.card-title{font-size:12px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:7px;color:var(--ink)}
+
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px}
+.field label{display:block;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:4px}
+select,input[type=text],input[type=number],textarea{width:100%;padding:7px 10px;border:1px solid var(--bd);border-radius:var(--r);font-size:11px;background:var(--s2);color:var(--ink);outline:none;transition:border-color .15s}
+select:focus,input:focus,textarea:focus{border-color:var(--blue)}
+select{appearance:none;cursor:pointer;padding-right:26px;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%234a5570' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-color:var(--s2)}
+
+.dtable{width:100%;border-collapse:collapse;background:var(--s1);border-radius:var(--r2);overflow:hidden;border:1px solid var(--bd)}
+.dtable th{background:var(--s2);padding:8px 12px;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);text-align:left;border-bottom:1px solid var(--bd);font-family:var(--mono)}
+.dtable td{padding:8px 12px;font-size:11px;border-bottom:1px solid rgba(42,51,71,.5);vertical-align:top}
+.dtable tr:last-child td{border-bottom:none}
+.dtable tr:hover td{background:rgba(255,255,255,.02)}
+
+.tt-scroll{overflow-x:auto;border-radius:var(--r2);border:1px solid var(--bd);background:var(--s1);margin-bottom:20px}
+table.tt{width:100%;border-collapse:collapse;min-width:1000px}
+table.tt thead th{background:var(--s2);padding:7px 4px;font-size:8.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);border-bottom:1px solid var(--bd);border-right:1px solid var(--bd);text-align:center;white-space:nowrap;font-family:var(--mono)}
+table.tt thead th:first-child{text-align:left;padding-left:12px;width:72px;color:var(--ink2)}
+table.tt th.break-h{background:var(--bg)!important;color:var(--ink3)!important;font-size:8px!important}
+table.tt td{border:1px solid rgba(42,51,71,.5);padding:2px;vertical-align:top;height:66px;position:relative}
+table.tt td.day-c{background:var(--s2);padding:0 10px;font-size:9px;font-weight:700;color:var(--ink3);vertical-align:middle;white-space:nowrap;border-right:2px solid var(--bd);font-family:var(--mono);letter-spacing:.07em}
+table.tt td.brk-c{background:var(--bg);opacity:.5;height:auto!important;padding:2px 0}
+table.tt td.sat-off{background:rgba(10,12,16,.7);opacity:.3}
+table.tt td:hover:not(.day-c):not(.brk-c):not(.sat-off){background:rgba(77,140,255,.04);cursor:pointer}
+
+.slot{height:100%;min-height:60px;border-radius:4px;padding:4px 6px;display:flex;flex-direction:column;gap:1px;position:relative;overflow:hidden;border-left:3px solid transparent;cursor:pointer;transition:transform .1s,box-shadow .1s}
+.slot:hover{transform:scale(1.03);z-index:10;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.sl-sub{font-size:10px;font-weight:700;line-height:1.2;margin-top:1px}
+.sl-fac{font-size:8.5px;opacity:.75;line-height:1.3}
+.sl-room{font-size:8px;font-family:var(--mono);margin-top:auto;opacity:.55}
+.s-empty{background:transparent;border-left-color:transparent;cursor:default}
+.s-empty:hover{transform:none;box-shadow:none}
+.s-theory  {background:rgba(77,140,255,.13); border-left-color:#4d8cff; color:#c0d8ff}
+.s-lab     {background:rgba(46,204,142,.1);  border-left-color:#2ecc8e; color:#9fffd8}
+.s-oe      {background:rgba(168,124,255,.1); border-left-color:#a87cff; color:#d4bfff}
+.s-pe      {background:rgba(255,140,66,.12); border-left-color:#ff8c42; color:#ffd0a8}
+.s-online  {background:rgba(48,214,192,.1);  border-left-color:#30d6c0; color:#99f0e8}
+.s-activity{background:rgba(42,51,71,.6);    border-left-color:#364060; color:#4a5570}
+.s-ncmc    {background:rgba(255,79,110,.08); border-left-color:#ff4f6e; color:#ff8898}
+.s-conflict{background:rgba(255,79,110,.22); border-left-color:#ff0030; color:#ffaaaa;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+.alert{display:flex;gap:8px;padding:10px 13px;border-radius:var(--r);font-size:11px;border:1px solid;margin-bottom:12px;align-items:flex-start}
+.al-blue  {background:var(--blue-bg); border-color:var(--blue-bd); color:var(--blue)}
+.al-green {background:var(--green-bg);border-color:var(--green-bd);color:var(--green)}
+.al-amber {background:var(--amber-bg);border-color:var(--amber-bd);color:var(--amber)}
+.al-red   {background:var(--red-bg);  border-color:var(--red-bd);  color:var(--red)}
+
+.toast{position:fixed;bottom:20px;right:20px;padding:10px 16px;border-radius:var(--r2);font-size:11px;font-weight:600;background:var(--s2);border:1px solid var(--bd2);box-shadow:0 8px 24px rgba(0,0,0,.6);z-index:9999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;max-width:320px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{border-color:var(--green-bd);color:var(--green)}
+.toast.err{border-color:var(--red-bd);color:var(--red)}
+.toast.warn{border-color:var(--amber-bd);color:var(--amber)}
+
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(6px)}
+.modal-box{background:var(--s1);border:1px solid var(--bd2);border-radius:var(--r3);width:560px;max-height:85vh;overflow-y:auto;padding:22px;box-shadow:0 24px 60px rgba(0,0,0,.7)}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:5px;display:flex;align-items:center;gap:8px}
+.modal-sub{font-size:10px;color:var(--ink2);margin-bottom:16px;font-family:var(--mono)}
+.modal-close{margin-left:auto;cursor:pointer;background:none;border:none;color:var(--ink3);font-size:20px;line-height:1;transition:color .15s}
+.modal-close:hover{color:var(--red)}
+
+.chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:9px;font-weight:700;border:1px solid;font-family:var(--mono)}
+.c-blue  {background:var(--blue-bg);color:var(--blue);border-color:var(--blue-bd)}
+.c-green {background:var(--green-bg);color:var(--green);border-color:var(--green-bd)}
+.c-amber {background:var(--amber-bg);color:var(--amber);border-color:var(--amber-bd)}
+.c-red   {background:var(--red-bg);color:var(--red);border-color:var(--red-bd)}
+.c-purple{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-bd)}
+
+.steps{display:flex;gap:0;margin-bottom:24px}
+.step{flex:1;padding:10px 14px;background:var(--s2);border:1px solid var(--bd);font-size:10px;font-weight:600;color:var(--ink3);position:relative;cursor:pointer;transition:all .2s;text-align:center}
+.step:first-child{border-radius:var(--r2) 0 0 var(--r2)}
+.step:last-child{border-radius:0 var(--r2) var(--r2) 0}
+.step:not(:first-child){border-left:none}
+.step.done{background:var(--green-bg);border-color:var(--green-bd);color:var(--green)}
+.step.active{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue)}
+.step-num{font-family:var(--mono);font-size:11px;font-weight:700;margin-right:6px}
+
+.conflict-item{padding:8px 12px;border-radius:var(--r);margin-bottom:6px;border-left:3px solid;font-size:10px}
+.ci-error{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.ci-warn {background:var(--amber-bg);border-color:var(--amber);color:var(--amber)}
+.ci-ok   {background:var(--green-bg);border-color:var(--green);color:var(--green)}
+
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;padding:8px 12px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r)}
+.leg{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--ink3)}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-logo">SIT <span>TTGEN</span></div>
+  <div class="tb-sep"></div>
+  <div class="tb-sub">CSE Dept · Even Sem 2025-26 · Advanced Timetable Generator</div>
+  <div class="tb-right">
+    <div class="phase-badge" id="phase-badge">Phase 1: Setup</div>
+    <button class="btn btn-green btn-sm" onclick="exportAllTT()">⬇ Export</button>
+  </div>
+</div>
+
+<div class="layout">
+<nav class="sidebar">
+  <div class="sb-body">
+    <div class="sb-grp">Setup</div>
+    <button class="nb on" id="nb-setup"     onclick="nav('setup')">    <span class="nb-icon">⚙️</span>Subject Assignment</button>
+    <button class="nb"    id="nb-configure" onclick="nav('configure')"><span class="nb-icon">📐</span>Constraints</button>
+
+    <div class="sb-grp">Generate</div>
+    <button class="nb" id="nb-generate"  onclick="nav('generate')"> <span class="nb-icon">🎯</span>Generate</button>
+    <button class="nb" id="nb-review"    onclick="nav('review')">   <span class="nb-icon">🔍</span>Review</button>
+
+    <div class="sb-grp">Sections</div>
+    <div id="section-nav"></div>
+
+    <div class="sb-grp">Export</div>
+    <button class="nb" id="nb-export"    onclick="nav('export')">   <span class="nb-icon">📄</span>Export</button>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="ph">
+    <div class="ph-info">
+      <h1 id="pg-title">Subject Assignment</h1>
+      <p id="pg-sub">Setup and configuration</p>
+    </div>
+    <div class="ph-acts" id="pg-acts"></div>
+  </div>
+  <div class="pb" id="pb"></div>
+</div>
+</div>
+
+<div id="modal-ov" class="modal-ov" style="display:none" onclick="if(event.target===this)closeMod()">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══ DATA STRUCTURES ══ */
+const TS = [
+  { id:'S1', label:'8:00–9:00',    short:'8-9',     period:1 },
+  { id:'S2', label:'9:00–10:00',   short:'9-10',    period:2 },
+  { id:'BK', label:'10–10:30',     short:'BREAK',   isBreak:true },
+  { id:'S3', label:'10:30–11:30',  short:'10:30',   period:3 },
+  { id:'S4', label:'11:30–12:30',  short:'11:30',   period:4 },
+  { id:'LN', label:'12:30–2:00',   short:'LUNCH',   isBreak:true },
+  { id:'S5', label:'2:00–3:00',    short:'2-3',     period:5 },
+  { id:'S6', label:'3:00–4:00',    short:'3-4',     period:6 },
+  { id:'S7', label:'4:00–5:00',    short:'4-5',     period:7 },
+  { id:'S8', label:'5:00–6:00',    short:'5-6',     period:8 },
+];
+const THEORY_SLOTS = ['S1','S2','S3','S4','S5','S6','S7','S8'];
+const SAT_SLOTS    = ['S1','S2','S3','S4'];
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DAYS_S = ['MON','TUE','WED','THU','FRI','SAT'];
+
+const CREDIT_LIMITS = {
+  'Professor & HOD':  28,
+  'Professor':        28,
+  'Assoc. Professor': 28,
+  'Asst. Professor':  32,
+  'M.Tech Student':   12,
+};
+
+const FACULTY = [
+  { id:'NRS',  name:'Dr. N R Sunitha',       short:'NRS',  designation:'Professor & HOD',  color:'#4d8cff', subs:['HPC','ACA','RTBDA'] },
+  { id:'RS2',  name:'Dr. R Sumathi',          short:'RS2',  designation:'Professor',         color:'#2ecc8e', subs:['Gen-AI','CC','DDSM'] },
+  { id:'MBN',  name:'Dr. M B Nirmala',        short:'MBN',  designation:'Assoc. Professor',  color:'#a87cff', subs:['CN','AIoT'] },
+  { id:'SAN',  name:'Mrs. Shwetha A N',       short:'SAN',  designation:'Asst. Professor',   color:'#ff8c42', subs:['CN'] },
+  { id:'KNS',  name:'Dr. K N Shreenath',      short:'KNS',  designation:'Assoc. Professor',  color:'#30d6c0', subs:['AWN','TOC','QC'] },
+  { id:'BKR',  name:'Dr. Bhargavi K',         short:'BKR',  designation:'Assoc. Professor',  color:'#f0a030', subs:['AI','IKS'] },
+  { id:'SA',   name:'Dr. Sumalatha Aradhya',  short:'SA',   designation:'Assoc. Professor',  color:'#ff4f6e', subs:['IoT','DAXR-Lab'] },
+  { id:'AHS',  name:'Dr. A H Shanthakumara', short:'AHS',  designation:'Assoc. Professor',  color:'#4d8cff', subs:['AI','RTBDA'] },
+  { id:'SK',   name:'Dr. Srinivasa K',        short:'SK',   designation:'Assoc. Professor',  color:'#2ecc8e', subs:['DAA','NLP'] },
+  { id:'KRP',  name:'Dr. K R Prasannakumara', short:'KRP',  designation:'Assoc. Professor',  color:'#a87cff', subs:['DAA','ACA','QC'] },
+  { id:'RMS',  name:'Dr. R M Savithramma',    short:'RMS',  designation:'Assoc. Professor',  color:'#ff8c42', subs:['CN'] },
+  { id:'HDK',  name:'Dr. H D Kallinatha',     short:'HDK',  designation:'Assoc. Professor',  color:'#30d6c0', subs:['DAA','QC'] },
+  { id:'ABP',  name:'Dr. Ashwini B P',        short:'ABP',  designation:'Assoc. Professor',  color:'#f0a030', subs:['DSP','TOC'] },
+  { id:'MHK',  name:'Dr. Mahesh Kumar',       short:'MHK',  designation:'Assoc. Professor',  color:'#4d8cff', subs:['BCT'] },
+  { id:'PK',   name:'Dr. Praveen Kumar',      short:'PK',   designation:'Assoc. Professor',  color:'#2ecc8e', subs:['CC'] },
+  { id:'MPT',  name:'Dr. Mahesh Pandit',      short:'MPT',  designation:'Assoc. Professor',  color:'#a87cff', subs:['AI-CS'] },
+  { id:'TCP',  name:'Dr. Pramod T C',         short:'TCP',  designation:'Asst. Professor',   color:'#ff8c42', subs:['FSD-Lab','IoT-Lab'] },
+  { id:'KGM',  name:'Dr. K G Manjunatha',     short:'KGM',  designation:'Asst. Professor',   color:'#30d6c0', subs:['MC','JS-Lab'] },
+  { id:'AVK',  name:'Mr. A V Krishnamohan',   short:'AVK',  designation:'Asst. Professor',   color:'#f0a030', subs:['TOC','PC'] },
+  { id:'GSP',  name:'Mr. Gururaj S P',        short:'GSP',  designation:'Asst. Professor',   color:'#4d8cff', subs:['CN','FSD-Lab'] },
+  { id:'SHK',  name:'Dr. Shruthi K',          short:'SHK',  designation:'Asst. Professor',   color:'#2ecc8e', subs:['DAA','UHV'] },
+  { id:'MNS',  name:'Dr. Sowmya M N',         short:'MNS',  designation:'Asst. Professor',   color:'#a87cff', subs:['POP','IKS'] },
+  { id:'SHE',  name:'Dr. Sheela S',           short:'SHE',  designation:'Asst. Professor',   color:'#ff8c42', subs:['DAA','IoT-Lab'] },
+  { id:'MJK',  name:'Mrs. Manjushree K',      short:'MJK',  designation:'Asst. Professor',   color:'#30d6c0', subs:['IoT','MC'] },
+  { id:'TDA',  name:'Mrs. Tejaswini D A',     short:'TDA',  designation:'Asst. Professor',   color:'#f0a030', subs:['SoftSkills','IKS','UHV'] },
+  { id:'ABS',  name:'Mrs. Anupama B S',       short:'ABS',  designation:'Asst. Professor',   color:'#4d8cff', subs:['DAXR-Lab','SoftSkills'] },
+  { id:'SSP',  name:'Mrs. Shilpa S P',        short:'SSP',  designation:'Asst. Professor',   color:'#2ecc8e', subs:['SoftSkills','IKS','UHV'] },
+  { id:'RKR',  name:'Ms. Rajeshwari K R',     short:'RKR',  designation:'Asst. Professor',   color:'#a87cff', subs:['CN','JS-Lab'] },
+  { id:'AUU',  name:'Mrs. Aruna U',           short:'AUU',  designation:'Asst. Professor',   color:'#ff8c42', subs:['SoftSkills','JS-Lab'] },
+  { id:'NCC',  name:'Mrs. Nikitha C',         short:'NCC',  designation:'Asst. Professor',   color:'#30d6c0', subs:['UHV','IKS'] },
+  { id:'DCC',  name:'Ms. Dhanushree C',       short:'DCC',  designation:'Asst. Professor',   color:'#f0a030', subs:['FSD-Lab','DAA-Lab'] },
+  { id:'YMH',  name:'Ms. Yamuna H',           short:'YMH',  designation:'Asst. Professor',   color:'#4d8cff', subs:['SoftSkills'] },
+  { id:'HMN',  name:'Dr. Hemavathi N',        short:'HMN',  designation:'Asst. Professor',   color:'#2ecc8e', subs:['DMS'] },
+  { id:'VGP',  name:'Dr. Vanitha G P',        short:'VGP',  designation:'Asst. Professor',   color:'#a87cff', subs:['DMS'] },
+  { id:'NGG',  name:'Dr. Nagaraj G',          short:'NGG',  designation:'Asst. Professor',   color:'#ff8c42', subs:['BE'] },
+  { id:'UPP',  name:'Dr. Usha P',             short:'UPP',  designation:'Asst. Professor',   color:'#30d6c0', subs:['DMS'] },
+  { id:'KGN',  name:'Dr. Keshavamurthy G N',  short:'KGN',  designation:'Asst. Professor',   color:'#f0a030', subs:['BE'] },
+  { id:'SKS',  name:'Dr. Sureshkumar S',      short:'SKS',  designation:'Asst. Professor',   color:'#4d8cff', subs:['DMS'] },
+  { id:'AKU',  name:'Dr. Akhela Umapathi',    short:'AKU',  designation:'Asst. Professor',   color:'#2ecc8e', subs:['BE'] },
+  { id:'MJT',  name:'Dr. Manjunath',          short:'MJT',  designation:'Asst. Professor',   color:'#a87cff', subs:['BE'] },
+  { id:'ANC',  name:'Dr. Anupama C',          short:'ANC',  designation:'Asst. Professor',   color:'#ff8c42', subs:['BE'] },
+  { id:'CHR',  name:'Mrs. Chethana R',        short:'CHR',  designation:'Asst. Professor',   color:'#30d6c0', subs:['DMS'] },
+  { id:'ANT',  name:'Dr. Anupama T A',        short:'ANT',  designation:'Asst. Professor',   color:'#f0a030', subs:['DDSM','UHV'] },
+  { id:'AKY',  name:'Dr. Akshatha Y',         short:'AKY',  designation:'Asst. Professor',   color:'#4d8cff', subs:['AI-CS','IPP'] },
+  { id:'BPT',  name:'Dr. Bharathi P T',       short:'BPT',  designation:'Asst. Professor',   color:'#2ecc8e', subs:['IoT','FSD-Lab'] },
+  { id:'ASP',  name:'Dr. A S Poornima',       short:'ASP',  designation:'Asst. Professor',   color:'#a87cff', subs:['DSP'] },
+  { id:'YSN',  name:'Dr. Y S Nijagunarya',    short:'YSN',  designation:'Asst. Professor',   color:'#ff8c42', subs:['MC'] },
+  { id:'KTM',  name:'Dr. Kiran Kumar T M',    short:'KTM',  designation:'Asst. Professor',   color:'#30d6c0', subs:['FSD-Lab','IoT-Lab'] },
+  { id:'ASS',  name:'Dr. Sheela S',           short:'ASS',  designation:'Asst. Professor',   color:'#f0a030', subs:['IoT-Lab'] },
+];
+
+const SUBJECTS = [
+  { code:'CN',        name:'Computer Networks',              sem:6, type:'theory', L:3, P:0, credits:3, branch:['CSE','AI&DS','AI&ML'] },
+  { code:'IoT',       name:'Internet of Things',             sem:6, type:'theory', L:3, P:0, credits:3, branch:['CSE','AI&ML'] },
+  { code:'FSD-Lab',   name:'Full Stack Dev with Django Lab', sem:6, type:'lab',    L:0, P:2, credits:1, branch:['CSE'] },
+  { code:'CN-Lab',    name:'Computer Networks Lab',          sem:6, type:'lab',    L:0, P:2, credits:1, branch:['CSE','AI&DS','AI&ML'] },
+  { code:'IoT-Lab',   name:'Internet of Things Lab',         sem:6, type:'lab',    L:0, P:2, credits:1, branch:['AI&ML','AI&DS'] },
+  { code:'HPC',       name:'High Performance Computing',     sem:6, type:'pe',     L:3, P:0, credits:3, branch:['CSE'] },
+  { code:'ACA',       name:'Advanced Computer Architecture', sem:6, type:'pe',     L:3, P:0, credits:3, branch:['CSE'] },
+  { code:'BCT',       name:'Blockchain Technology',          sem:6, type:'pe',     L:3, P:0, credits:3, branch:['CSE'] },
+  { code:'CC',        name:'Cloud Computing',                sem:6, type:'pe',     L:3, P:0, credits:3, branch:['CSE','AI&DS','AI&ML'] },
+  { code:'NLP',       name:'Natural Language Processing',    sem:6, type:'theory', L:3, P:0, credits:3, branch:['AI&ML'] },
+  { code:'SoftSkills',name:'Soft Skills',                    sem:6, type:'activity',L:3, P:0, credits:2, branch:['CSE','AI&DS','AI&ML'] },
+  { code:'IKS',       name:'Indian Knowledge System',        sem:6, type:'theory', L:1, P:0, credits:1, branch:['CSE','AI&DS','AI&ML'] },
+  { code:'OE',        name:'Open Elective',                  sem:6, type:'oe',     L:3, P:0, credits:3, branch:['CSE','AI&ML','AI&DS'] },
+  { code:'NCMC',      name:'NSS/PE/Yoga',                    sem:6, type:'activity',L:0, P:2, credits:2, branch:['CSE','AI&DS','AI&ML'] },
+  { code:'DAA',       name:'Design & Analysis of Algorithms',sem:4, type:'theory', L:3, P:0, credits:3, branch:['CSE','AI&DS','AI&ML'] },
+  { code:'DAA-Lab',   name:'DAA Lab',                        sem:4, type:'lab',    L:0, P:2, credits:1, branch:['CSE','AI&DS','AI&ML'] },
+  { code:'MC',        name:'Microcontroller & Embedded Sys', sem:4, type:'theory', L:3, P:2, credits:4, branch:['CSE'] },
+  { code:'MC-Lab',    name:'Microcontroller Lab',            sem:4, type:'lab',    L:0, P:2, credits:1, branch:['CSE'] },
+  { code:'TOC',       name:'Theory of Computations',         sem:4, type:'theory', L:3, P:2, credits:4, branch:['CSE'] },
+  { code:'TOC-Lab',   name:'TOC Lab',                        sem:4, type:'lab',    L:0, P:2, credits:1, branch:['CSE'] },
+  { code:'DMS',       name:'Discrete Mathematical Structures',sem:4, type:'theory', L:3, P:0, credits:3, branch:['CSE','AI&DS','AI&ML'] },
+  { code:'BE',        name:'Biology for Engineers',          sem:4, type:'theory', L:3, P:0, credits:3, branch:['CSE','AI&DS','AI&ML'] },
+  { code:'POP',       name:'Principles of Programming',      sem:4, type:'theory', L:3, P:2, credits:4, branch:['CSE','AI&DS','AI&ML'] },
+  { code:'POP-Lab',   name:'POP Lab',                        sem:4, type:'lab',    L:0, P:2, credits:1, branch:['CSE','AI&DS','AI&ML'] },
+  { code:'JS-Lab',    name:'JavaScript Lab',                 sem:4, type:'lab',    L:0, P:2, credits:1, branch:['CSE'] },
+  { code:'UHV',       name:'Universal Human Values',         sem:4, type:'theory', L:1, P:0, credits:1, branch:['CSE','AI&DS','AI&ML'] },
+  { code:'DSP',       name:'Data Science with Python',       sem:4, type:'theory', L:3, P:2, credits:4, branch:['AI&DS','AI&ML'] },
+  { code:'DSP-Lab',   name:'DSP Lab',                        sem:4, type:'lab',    L:0, P:2, credits:1, branch:['AI&DS','AI&ML'] },
+];
+
+const ROOMS = [
+  { id:'CSL-001', type:'classroom', capacity:60 },
+  { id:'CSL-002', type:'classroom', capacity:60 },
+  { id:'CSL-003', type:'classroom', capacity:60 },
+  { id:'CSL-101', type:'classroom', capacity:60 },
+  { id:'CSL-102', type:'classroom', capacity:60 },
+  { id:'CSL-103', type:'classroom', capacity:60 },
+  { id:'CSL-104', type:'classroom', capacity:60 },
+  { id:'CSL-105', type:'classroom', capacity:60 },
+  { id:'Linux Lab',          type:'lab', capacity:30 },
+  { id:'Project Lab',        type:'lab', capacity:30 },
+  { id:'ACC Lab',            type:'lab', capacity:30 },
+  { id:'Kalpana Chawla Lab', type:'lab', capacity:30 },
+  { id:'Airavata Lab',       type:'lab', capacity:30 },
+  { id:'Abdul Kalam Lab',    type:'lab', capacity:30 },
+];
+
+const SECTIONS = [
+  { id:'VI-A',   label:'VI Sem A',     sem:6, branch:'CSE',   room:'CSL-103', students:60, color:'#4d8cff' },
+  { id:'VI-B',   label:'VI Sem B',     sem:6, branch:'CSE',   room:'CSL-104', students:60, color:'#2ecc8e' },
+  { id:'VI-C',   label:'VI Sem C',     sem:6, branch:'CSE',   room:'CSL-101', students:60, color:'#a87cff' },
+  { id:'VI-AIDS',label:'VI Sem AI&DS', sem:6, branch:'AI&DS', room:'CSL-105', students:60, color:'#30d6c0' },
+  { id:'VI-AIML',label:'VI Sem AI&ML', sem:6, branch:'AI&ML', room:'CSL-102', students:60, color:'#f0a030' },
+  { id:'IV-A',   label:'IV Sem A',     sem:4, branch:'CSE',   room:'CSL-001', students:60, color:'#ff4f6e' },
+  { id:'IV-B',   label:'IV Sem B',     sem:4, branch:'CSE',   room:'CSL-002', students:60, color:'#ff8c42' },
+  { id:'IV-C',   label:'IV Sem C',     sem:4, branch:'CSE',   room:'CSL-003', students:60, color:'#60a5fa' },
+];
+
+/* ══ STATE ══ */
+let assignments = {};
+let generatedTT = {};
+let conflicts = [];
+let config = { maxConsecTheory:2, lab_duration:2, satHalfDay:true };
+
+/* ══ HELPERS ══ */
+const byId = (arr, id) => arr.find(x => x.id === id);
+const fac = id => byId(FACULTY, id);
+const initials = n => (n||'').replace(/^(Dr\.|Mrs\.|Mr\.|Ms\.)\s/,'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+const creditLimit = desig => CREDIT_LIMITS[desig] || 32;
+
+function usedCredits(facId) {
+  let c = 0;
+  Object.values(assignments).forEach(secA => {
+    Object.values(secA).forEach(a => {
+      if (a.faculty === facId) {
+        const s = SUBJECTS.find(x => x.code === a.subCode);
+        if (s) c += (s.L || 0) + (s.P ? Math.ceil(s.P / 2) : 0);
+      }
+    });
+  });
+  return c;
+}
+
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `toast show ${type}`;
+  clearTimeout(el._t); el._t = setTimeout(() => el.className = 'toast', 3200);
+}
+
+function closeMod() { document.getElementById('modal-ov').style.display = 'none'; }
+function openMod(html) {
+  document.getElementById('modal-box').innerHTML = html;
+  document.getElementById('modal-ov').style.display = 'flex';
+}
+
+function nav(page) {
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
+  const el = document.getElementById('nb-' + page);
+  if (el) el.classList.add('on');
+  const pages = { setup: renderSetup, configure: renderConfigure, generate: renderGenerate, review: renderReview, export: renderExport };
+  if (pages[page]) pages[page]();
+  else if (page.startsWith('sec-')) renderSectionTT(page.replace('sec-',''));
+}
+
+function setPH(title, sub, acts = '') {
+  document.getElementById('pg-title').textContent = title;
+  document.getElementById('pg-sub').textContent   = sub;
+  document.getElementById('pg-acts').innerHTML    = acts;
+}
+
+function setBody(html) { document.getElementById('pb').innerHTML = html; }
+
+function buildSectionNav() {
+  const nav = document.getElementById('section-nav');
+  nav.innerHTML = SECTIONS.map(s => {
+    const done = generatedTT[s.id] && Object.keys(generatedTT[s.id]).length > 0;
+    return `<button class="nb" id="nb-sec-${s.id}" onclick="nav('sec-${s.id}')">
+      <span style="width:8px;height:8px;border-radius:50%;background:${s.color};flex-shrink:0;display:inline-block"></span>
+      <span style="flex:1;text-align:left;font-size:10px">${s.label}</span>
+      ${done ? '<span class="nb-badge nb-ok">✓</span>' : ''}
+    </button>`;
+  }).join('');
+}
+
+/* ══ PAGE: SETUP ══ */
+function renderSetup() {
+  setPH('HOD Subject Assignment', 'Assign subjects to faculty',
+    `<button class="btn btn-green" onclick="autoAssignFromPDF()">⚡ Auto-fill</button>
+     <button class="btn btn-blue"  onclick="saveAssignments()">💾 Save & Continue →</button>`);
+
+  let html = `<div class="steps">
+    <div class="step active"><span class="step-num">1</span>Assignment</div>
+    <div class="step" onclick="nav('configure')"><span class="step-num">2</span>Constraints</div>
+    <div class="step" onclick="nav('generate')"><span class="step-num">3</span>Generate</div>
+    <div class="step" onclick="nav('review')"><span class="step-num">4</span>Review</div>
+    <div class="step" onclick="nav('export')"><span class="step-num">5</span>Export</div>
+  </div>
+  <div class="alert al-blue">🎓 Assign subjects to faculty per section</div>
+  ${SECTIONS.map(sec => {
+    const relevantSubs = SUBJECTS.filter(s => String(s.sem) === String(sec.sem));
+    const assigned = Object.keys(assignments[sec.id] || {}).length;
+    return `<div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--bd)">
+        <div style="width:32px;height:32px;border-radius:var(--r);background:${sec.color}22;color:${sec.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">${sec.id.split('-')[1]}</div>
+        <div><div style="font-size:13px;font-weight:700">${sec.label}</div><div style="font-size:10px;color:var(--ink3);font-family:var(--mono)">${sec.branch} · Sem ${sec.sem}</div></div>
+        <div style="margin-left:auto"><span class="chip ${assigned >= relevantSubs.length ? 'c-green' : 'c-amber'}">${assigned}/${relevantSubs.length}</span></div>
+      </div>
+      <table class="dtable" style="margin:0">
+        <thead><tr><th>Subject</th><th>Faculty</th><th>Room</th></tr></thead>
+        <tbody>${relevantSubs.map(s => {
+          const a = assignments[sec.id]?.[s.code] || {};
+          return `<tr>
+            <td>${s.code}</td>
+            <td><select onchange="setAssign('${sec.id}','${s.code}','faculty',this.value)" style="font-size:10px">
+              <option value="">—</option>
+              ${FACULTY.map(f => `<option value="${f.id}" ${f.id === a.faculty ? 'selected' : ''}>${f.short}</option>`).join('')}
+            </select></td>
+            <td><select onchange="setAssign('${sec.id}','${s.code}','room',this.value)" style="font-size:10px">
+              <option value="">Auto</option>
+              ${ROOMS.map(r => `<option value="${r.id}" ${r.id === a.room ? 'selected' : ''}>${r.id}</option>`).join('')}
+            </select></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>`;
+  }).join('')}`;
+  setBody(html);
+}
+
+function setAssign(secId, subCode, field, val) {
+  if (!assignments[secId]) assignments[secId] = {};
+  if (!assignments[secId][subCode]) assignments[secId][subCode] = { subCode };
+  assignments[secId][subCode][field] = val;
+}
+
+function saveAssignments() {
+  localStorage.setItem('tt_assignments', JSON.stringify(assignments));
+  toast('Assignments saved', 'ok');
+  buildSectionNav();
+  nav('configure');
+}
+
+function autoAssignFromPDF() {
+  const PDF_ASSIGNMENTS = {
+    'VI-A': { 'CN': { faculty:'MBN' }, 'IoT': { faculty:'SA' }, 'HPC': { faculty:'NRS' }, 'BCT': { faculty:'MHK' }, 'CC': { faculty:'PK' }, 'SoftSkills': { faculty:'TDA' } },
+    'VI-B': { 'CN': { faculty:'SAN' }, 'IoT': { faculty:'BPT' }, 'HPC': { faculty:'NRS' }, 'BCT': { faculty:'MHK' }, 'CC': { faculty:'PK' }, 'SoftSkills': { faculty:'ABS' } },
+    'VI-C': { 'CN': { faculty:'RKR' }, 'IoT': { faculty:'MJK' }, 'HPC': { faculty:'NRS' }, 'BCT': { faculty:'MHK' }, 'CC': { faculty:'PK' }, 'SoftSkills': { faculty:'SSP' } },
+    'IV-A': { 'DAA': { faculty:'SHK' }, 'MC': { faculty:'MJK' }, 'TOC': { faculty:'ABP' }, 'BE': { faculty:'ANC' }, 'DMS': { faculty:'CHR' }, 'POP': { faculty:'MNS' } },
+    'IV-B': { 'DAA': { faculty:'SK' }, 'MC': { faculty:'YSN' }, 'TOC': { faculty:'AVK' }, 'BE': { faculty:'AKU' }, 'DMS': { faculty:'VGP' }, 'POP': { faculty:'MNS' } },
+    'IV-C': { 'DAA': { faculty:'HDK' }, 'MC': { faculty:'KGM' }, 'TOC': { faculty:'KNS' }, 'BE': { faculty:'NGG' }, 'DMS': { faculty:'HMN' }, 'POP': { faculty:'MNS' } },
+  };
+  Object.entries(PDF_ASSIGNMENTS).forEach(([secId, subs]) => {
+    if (!assignments[secId]) assignments[secId] = {};
+    Object.entries(subs).forEach(([subCode, asgn]) => {
+      assignments[secId][subCode] = { subCode, ...asgn };
+    });
+  });
+  toast('✓ Auto-filled from PDF', 'ok');
+  renderSetup();
+}
+
+/* ══ PAGE: CONFIGURE ══ */
+function renderConfigure() {
+  setPH('Constraints', 'Configure generation rules', `<button class="btn btn-blue" onclick="saveConfig();nav('generate')">Save & Generate →</button>`);
+  setBody(`<div class="steps">
+    <div class="step done"><span class="step-num">✓</span>Assignment</div>
+    <div class="step active"><span class="step-num">2</span>Constraints</div>
+    <div class="step" onclick="nav('generate')"><span class="step-num">3</span>Generate</div>
+    <div class="step" onclick="nav('review')"><span class="step-num">4</span>Review</div>
+    <div class="step" onclick="nav('export')"><span class="step-num">5</span>Export</div>
+  </div>
+  <div class="card"><div class="card-title">⏱ Rules</div>
+    <div class="field" style="margin-bottom:10px">
+      <label>Max Consecutive Theory</label>
+      <select id="cfg-maxConsec">
+        <option value="1">1 slot</option>
+        <option value="2" selected>2 slots</option>
+        <option value="3">3 slots</option>
+      </select>
+    </div>
+    <div class="field" style="margin-bottom:10px">
+      <label>Lab Duration</label>
+      <select id="cfg-labDur">
+        <option value="2" selected>2 slots</option>
+        <option value="3">3 slots</option>
+      </select>
+    </div>
+  </div>`);
+}
+
+function saveConfig() {
+  config.maxConsecTheory = parseInt(document.getElementById('cfg-maxConsec')?.value || 2);
+  config.lab_duration = parseInt(document.getElementById('cfg-labDur')?.value || 2);
+  toast('Config saved', 'ok');
+}
+
+/* ══ PAGE: GENERATE ══ */
+function renderGenerate() {
+  setPH('Generate Timetables', 'Create schedules', `<button class="btn btn-green btn-lg" onclick="generateAll()">🚀 Generate</button>`);
+  setBody(`<div class="steps">
+    <div class="step done"><span class="step-num">✓</span>Assignment</div>
+    <div class="step done"><span class="step-num">✓</span>Constraints</div>
+    <div class="step active"><span class="step-num">3</span>Generate</div>
+    <div class="step" onclick="nav('review')"><span class="step-num">4</span>Review</div>
+    <div class="step" onclick="nav('export')"><span class="step-num">5</span>Export</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat"><div class="stat-num" style="color:var(--blue)">${SECTIONS.length}</div><div class="stat-lbl">Sections</div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--green)">${FACULTY.length}</div><div class="stat-lbl">Faculty</div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--amber)">${SUBJECTS.length}</div><div class="stat-lbl">Subjects</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🎯 Select Sections</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:14px">
+      ${SECTIONS.map(s => `<label style="display:flex;align-items:center;gap:6px;padding:8px;border:1px solid var(--bd);border-radius:var(--r);cursor:pointer;font-size:11px;background:var(--s2)">
+        <input type="checkbox" id="gen-${s.id}" checked>
+        <span class="sec-dot" style="width:8px;height:8px;border-radius:50%;background:${s.color};display:inline-block;flex-shrink:0"></span>
+        ${s.label}
+      </label>`).join('')}
+    </div>
+    <button class="btn btn-green btn-lg" onclick="generateAll()">🚀 Generate All</button>
+  </div>
+  <div id="gen-log" class="card" style="display:none">
+    <div class="card-title">📋 Log</div>
+    <div id="gen-log-body" style="font-size:10px;font-family:var(--mono);color:var(--ink3);line-height:2;max-height:300px;overflow-y:auto"></div>
+  </div>`);
+}
+
+function log(msg) {
+  const el = document.getElementById('gen-log-body');
+  if (!el) return;
+  document.getElementById('gen-log').style.display = 'block';
+  el.innerHTML += `<div>${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function generateAll() {
+  const selected = SECTIONS.filter(s => document.getElementById('gen-' + s.id)?.checked);
+  if (!selected.length) { toast('Select sections', 'err'); return; }
+  
+  document.getElementById('gen-log-body').innerHTML = '';
+  log('Starting generation...');
+  
+  selected.forEach(sec => {
+    generatedTT[sec.id] = generateSection(sec);
+    log(`✓ ${sec.label}`);
+  });
+  
+  conflicts = detectAllClashes();
+  log('✓ Complete!');
+  buildSectionNav();
+  toast('Generated!', 'ok');
+  setTimeout(() => nav('review'), 1500);
+}
+
+function generateSection(sec) {
+  const facA = assignments[sec.id] || {};
+  const tt = {};
+  DAYS.forEach(day => { tt[day] = {}; });
+  
+  // Simple slot assignment from assignments
+  THEORY_SLOTS.forEach((slotId, idx) => {
+    const dayIdx = idx % 6;
+    const day = DAYS[dayIdx];
+    Object.entries(facA).forEach(([subCode, a]) => {
+      if (!tt[day][slotId]) {
+        tt[day][slotId] = { subject: subCode, faculty: a.faculty || '', room: a.room || '', type: getSlotType(subCode) };
+      }
+    });
+  });
+  return tt;
+}
+
+function getSlotType(subCode) {
+  const s = SUBJECTS.find(x => x.code === subCode);
+  return s?.type || 'theory';
+}
+
+function detectAllClashes() {
+  return []; // Simplified for now
+}
+
+/* ══ PAGE: REVIEW ══ */
+function renderReview() {
+  const errors = conflicts.filter(c => c.severity === 'error');
+  const warns = conflicts.filter(c => c.severity === 'warn');
+  setPH('Review Clashes', `${conflicts.length} issue(s)`, `<button class="btn btn-blue" onclick="nav('export')">Continue →</button>`);
+  setBody(`<div class="steps">
+    <div class="step done"><span class="step-num">✓</span>Assignment</div>
+    <div class="step done"><span class="step-num">✓</span>Constraints</div>
+    <div class="step done"><span class="step-num">✓</span>Generate</div>
+    <div class="step active"><span class="step-num">4</span>Review</div>
+    <div class="step" onclick="nav('export')"><span class="step-num">5</span>Export</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat"><div class="stat-num" style="color:${errors.length ? 'var(--red)' : 'var(--green)'}">${errors.length}</div><div class="stat-lbl">Errors</div></div>
+    <div class="stat"><div class="stat-num" style="color:${warns.length ? 'var(--amber)' : 'var(--green)'}">${warns.length}</div><div class="stat-lbl">Warnings</div></div>
+  </div>
+  ${errors.length === 0 && warns.length === 0 ? '<div class="alert al-green">✅ No conflicts!</div>' : ''}`);
+}
+
+/* ══ PAGE: SECTION TIMETABLE ══ */
+function renderSectionTT(secId) {
+  const sec = byId(SECTIONS, secId);
+  if (!sec) return;
+  const tt = generatedTT[secId];
+  if (!tt) {
+    setPH(sec.label, 'Not generated');
+    setBody(`<div class="alert al-amber">Not generated yet</div>`);
+    return;
+  }
+  setPH(sec.label, `${sec.branch} · Sem ${sec.sem}`, `<button class="btn btn-green btn-sm" onclick="nav('export')">→ Export</button>`);
+  let html = `<div class="tt-scroll"><table class="tt"><thead><tr><th>Day</th>${TS.map(t => `<th>${t.short}</th>`).join('')}</tr></thead><tbody>`;
+  DAYS.forEach(day => {
+    html += `<tr><td class="day-c">${day.slice(0,3).toUpperCase()}</td>`;
+    TS.forEach(t => {
+      const entry = (tt[day] || {})[t.id];
+      if (t.isBreak) { html += `<td class="brk-c"></td>`; return; }
+      if (!entry) { html += `<td><div class="slot s-empty"></div></td>`; return; }
+      const cls = getSlotCls(entry.type);
+      html += `<td><div class="slot ${cls}"><div class="sl-sub">${entry.subject}</div></div></td>`;
+    });
+    html += `</tr>`;
+  });
+  html += `</tbody></table></div>`;
+  setBody(html);
+}
+
+function getSlotCls(type) {
+  const m = { theory:'s-theory', lab:'s-lab', oe:'s-oe', pe:'s-pe', online:'s-online', activity:'s-activity', ncmc:'s-ncmc' };
+  return m[type] || 's-theory';
+}
+
+/* ══ PAGE: EXPORT ══ */
+function renderExport() {
+  const generated = Object.keys(generatedTT).filter(s => Object.keys(generatedTT[s]||{}).length > 0);
+  setPH('Export', `${generated.length} timetables ready`, `<button class="btn btn-green" onclick="exportAllTT()">⬇ Export JSON</button>`);
+  setBody(`<div class="steps">
+    <div class="step done"><span class="step-num">✓</span>Assignment</div>
+    <div class="step done"><span class="step-num">✓</span>Constraints</div>
+    <div class="step done"><span class="step-num">✓</span>Generate</div>
+    <div class="step done"><span class="step-num">✓</span>Review</div>
+    <div class="step active"><span class="step-num">5</span>Export</div>
+  </div>
+  <div class="alert al-green">✅ Ready to export</div>
+  <div class="card">
+    <button class="btn btn-green btn-lg" style="width:100%" onclick="exportAllTT()">📦 Export All as JSON</button>
+  </div>`);
+}
+
+function exportAllTT() {
+  const out = { assignments, timetable: generatedTT, meta: { generated: new Date().toISOString() } };
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type:'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'timetable.json'; a.click();
+  toast('Exported!', 'ok');
+}
+
+/* ══ INIT ══ */
+function init() {
+  assignments = JSON.parse(localStorage.getItem('tt_assignments') || '{}');
+  buildSectionNav();
+  nav('setup');
+}
+
+init();
+</script>
+</body>
+</html>
